@@ -110,7 +110,7 @@ def zhandu(rg, pc, tc, t, p, yn2, yco2, yh2s):
     lllupr = llupr(rg, pc, tc, t, p)  # 计算密度
     zhandu = k * math.exp(x * (lllupr ** y))  # zhandu----粘度
     return zhandu
-#####################需要核实！！！！！！！！！！！！！！！
+#####################需要核实是做什么用的？##########################
 def zp(pc, tc, t, p):
     # z()函数为Dranchuk,Purris和Robinson法计算z
     for i in range(30, 0, -1):
@@ -175,22 +175,22 @@ def fy(rg, pc, tc, tts, tws, p, yn2, yco2, yh2s, d1, q, ee):
 
 def pws(rg, pc, tc, h, tts, tws, pts):
     # 平均温度和平均压缩系数计算法计算井底压力(静气柱）
-
+    # tts--井口温度，tws--井底温度  pts--井口压力
     pws = pts + pts * h / 12192
 
     for i in range(30, 0, -1):
-        p = (pts + pws_value) / 2
+        p = (pts + pws) / 2
         t = (tts + tws) / 2
 
         # Dranchuk, Purris和Robinson法计算z
-        zz = z(pc, tc, t, p)  # 假设z函数已经定义好
+        zz = z(pc, tc, t, p)
         pws = pts * math.exp(0.03415 * rg * h / (zz * t))
 
     return pws
 
 def pts(rg, pc, tc, h, tts, tws, pws):
     # 平均温度和平均压缩系数计算法计算井口压力(静气柱）
-
+    # tts--井口温度，tws--井底温度  pws--井底压力
     pts = pws - pws * h / 12192
 
     for i in range(100, 0, -1):
@@ -198,9 +198,9 @@ def pts(rg, pc, tc, h, tts, tws, pws):
         t = (tts + tws) / 2
 
         # Dranchuk, Purris和Robinson法计算z
-        zz = z(pc, tc, t, p)  # 假设z函数已经定义好
+        zz = z(pc, tc, t, p)
 
-        pts_value = pws / math.exp(0.03415 * rg * h / (zz * t))
+        pts = pws / math.exp(0.03415 * rg * h / (zz * t))
 
     return pts
 
@@ -523,6 +523,3 @@ def di(rg, pc, tc, t, p, q):
     di_value = 0.01 * 1.2423 * (rg * zz * t) ** 0.25 * (10553 - (34158 * rg * p) / (zz * t)) ** (-1 / 8) * p ** (-0.25) * q ** 0.5
 
     return di_value
-
-rlt = zp(pc=4.69, tc=194.4, t=376.04, p=25.68)
-print(rlt)
