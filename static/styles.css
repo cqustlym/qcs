@@ -121,3 +121,17 @@ body {
         padding: 15px 20px;
     }
 }
+
+.big-button {
+  width: 50px;       /* 设置按钮宽度 */
+  height: 30px;       /* 设置按钮高度 */
+  font-size: 14px;    /* 设置按钮文字大小 */
+  cursor: pointer;    /* 鼠标悬停时显示手型 */
+}
+
+.big-input {
+  width: 120px;       /* 设置按钮宽度 */
+  height: 30px;       /* 设置按钮高度 */
+  font-size: 14px;    /* 设置按钮文字大小 */
+  cursor: pointer;    /* 鼠标悬停时显示手型 */
+}
