@@ -22,3 +22,8 @@
 
 - [ ] 配置SSL
 - [ ] 编写计算函数
+- [ ] 解决html中的a标签返回的路径带.html,这样会错误的指向页面。目前做法是在route里做一个重定向。通过定义路由来实现 /pws 和 /pws.html 的映射。
+   ```python
+  @app.route('/pws.html') 
+  def pws_html():
+  return redirect(url_for('pws')) 

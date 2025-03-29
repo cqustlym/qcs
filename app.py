@@ -134,6 +134,14 @@ def success():
                                results=[],  # 明确传递空列表
                                error=None)
 
+@app.route('/pws',strict_slashes=False) # strict_slashes=False 可以返回/pws，而非/pws/
+def cal_pws():
+    results=[]###业务逻辑待写
+    return render_template('pws.html',results=results)
+
+@app.route('/pws.html')
+def pws_html():
+    return redirect(url_for('pws'))
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0')
