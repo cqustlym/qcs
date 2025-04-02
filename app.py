@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for,jsonify,json
 import pymysql
+from pymysql.cursors import DictCursor
 import fuction
 from flask_login import LoginManager, UserMixin, login_user, login_required
 
@@ -106,42 +107,78 @@ def success():
         try:
             connection = pymysql.connect(**get_db_config())
             with connection.cursor() as cursor:
-                sql = "SELECT * FROM wellcal WHERE wellname = %s"
+                sql = "SELECT * FROM dadiaocha WHERE wellname = %s"
                 cursor.execute(sql, (well_name,))
                 result = cursor.fetchall()
-                ##把结果重新构建一个列表，以显示更直观
-                result = result[0]
-                result = list(result.values())
-                # 假设fuction.z是一个计算函数
-                result = fuction.z(result[18], result[19], result[16], 5)
+                # ##把结果重新构建一个列表，以显示更直观
+                # result = result[0]
+                # result = list(result.values())
+                # # 假设fuction.z是一个计算函数
+                # result = fuction.z(result[18], result[19], result[16], 5)
 
             # 确保返回列表格式（即使空结果）
-            return render_template('success.html',
-                                   results=result,  # 这里已经是列表类型
-                                   searched_well=well_name,
-                                   error=None)
+            return render_template('success.html',results=result,searched_well=well_name,error=None)
 
         except pymysql.MySQLError as e:
-            return render_template('success.html',
-                                   results=[],  # 明确传递空列表
-                                   error=str(e))
+            return render_template('success.html',results=[],error=str(e))
         finally:
             if 'connection' in locals():
                 connection.close()
 
     elif request.method == 'GET':
-        return render_template('success.html',
-                               results=[],  # 明确传递空列表
-                               error=None)
+        return render_template('success.html',results=[],error=None)
 
-@app.route('/pws',strict_slashes=False) # strict_slashes=False 可以返回/pws，而非/pws/
-def cal_pws():
-    results=[]###业务逻辑待写
-    return render_template('pws.html',results=results)
+@app.route('/lookfor', methods=['GET'])
+def lookfor_page():
+    """返回包含Handsontable的前端页面"""
+    return render_template('lookfor.html')
 
-@app.route('/pws.html')
-def pws_html():
-    return redirect(url_for('pws'))
+@app.route('/api/search', methods=['POST'])
+def search_well():
+    """API端点，返回JSON格式的查询结果（包含所有可能字段）"""
+    well_name = request.form.get('wellname')
+    if not well_name:
+        return jsonify({
+            "success": False,
+            "data": [],
+            "error": "Well name is required"
+        }), 400
+    
+    try:
+        connection = pymysql.connect(**get_db_config())
+        with connection.cursor() as cursor:
+            # 1. 先查询符合条件的数据
+            sql = "SELECT * FROM monthlypro WHERE JH = %s"
+            cursor.execute(sql, (well_name,))
+            result = cursor.fetchall()
+            
+            # 2. 获取表的所有字段（确保即使某些记录缺少字段也能显示表头）
+            cursor.execute("DESCRIBE monthlypro")
+            all_fields = [field['Field'] for field in cursor.fetchall()]
+            
+            # 3. 规范化数据（确保每条记录包含所有字段）
+            normalized_data = []
+            for row in result:
+                normalized_row = {field: row.get(field, None) for field in all_fields}
+                normalized_data.append(normalized_row)
+            
+            return jsonify({
+                "success": True,
+                "data": normalized_data,
+                "columns": all_fields,  # 返回所有字段名用于前端表头
+                "error": None
+            })
+            
+    except pymysql.MySQLError as e:
+        return jsonify({
+            "success": False,
+            "data": [],
+            "error": str(e)
+        }), 500
+    finally:
+        if 'connection' in locals():
+            connection.close()
+
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0')
