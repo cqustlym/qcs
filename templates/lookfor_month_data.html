@@ -36,8 +36,8 @@
     {{navbar()}}
 
     <div class="search-container" style="text-align: center;">
-        <h1>查询气井信息</h1>
-        <input type="text" id="wellname" placeholder="Enter well name">
+        <h3>查询气井信息</h3>
+        <input type="text" id="wellname" placeholder="请输入井号">
         <button onclick="searchWell()">查询</button>
         <div id="error" class="error"></div>
     </div>
@@ -51,20 +51,20 @@
         const container = document.getElementById('hot');
         // 2. 定义中文表头（完整列名）
         const chineseHeaders = [
-            '井号', '气藏', '日期', '生产时间', '开井油压', '开井套压',
-            '关井油压', '关井套压', '最大关井套压', '最大关井油压',
-            '最小关井套压', '最小关井油压', '日产气（方）', '日产水（方）',
-            '日产油（方）', '月产气（万方）', '月产水（万方）', '月产油（万方）',
-            '年产气（万方）', '年产水（万方）', '年产油（万方）', '累产气（亿方）',
-            '累产水（亿方）', '累产油（亿方）', '月放空（万方）', '年放空（万方）',
-            '累计放空（亿方）', '井ID', '产层ID', '完整井名'
+            '井号', '气藏', '日期', '生产时间(天)', '开井油压(MPa)', '开井套压(MPa)',
+            '关井油压(MPa)', '关井套压(MPa)', '最大关井套压(MPa)', '最大关井油压(MPa)',
+            '最小关井套压(MPa)', '最小关井油压(MPa)', '日产气(方)', '日产水(方)）',
+            '日产油(方)', '月产气(万方)', '月产水(万方)', '月产油(万方)',
+            '年产气(万方)', '年产水(万方)', '年产油(万方)', '累产气(亿方)',
+            '累产水(亿方)', '累产油(亿方)', '月放空(亿方)', '年放空(亿方)',
+            '累计放空(亿方)', '井ID', '产层ID', '完整井名'
         ];
         const hot = new Handsontable(container, {
             data: [],
             colHeaders: chineseHeaders,
             rowHeaders: true,
             width: '100%',
-            height: 'calc(100vh - 200px)', // 默认值
+            height: 'calc(100vh - 150px)', // 默认值
             licenseKey: 'non-commercial-and-evaluation'
         });
         // 可选：监听窗口变化微调
@@ -123,7 +123,6 @@
             return Array.from(fields);
         }
 
-        // 使用指定列更新表格
         function updateTableWithColumns(data, columns) {
             // 1. 创建列配置
             const colHeaders = chineseHeaders; // 使用你定义的中文表头
@@ -133,12 +132,20 @@
                 type: guessColumnType(data, col)
             }));
 
-
             // 2. 规范化数据（确保每条数据都有所有列）
             const normalizedData = data.map(row => {
                 const newRow = {};
                 columns.forEach(col => {
-                    newRow[col] = row.hasOwnProperty(col) ? row[col] : null;
+                    // 如果是日期字段，格式化为 YYYY-MM-DD
+                    if (col.includes('日期')) { // 假设日期字段的列名包含“日期”
+                        if (row[col]) {
+                            newRow[col] = formatDate(row[col]);
+                        } else {
+                            newRow[col] = null;
+                        }
+                    } else {
+                        newRow[col] = row.hasOwnProperty(col) ? row[col] : null;
+                    }
                 });
                 return newRow;
             });
@@ -151,6 +158,20 @@
             });
             // 4. 渲染表格
             hot.render();
+        }
+
+        // 辅助函数：格式化日期为 YYYY-MM-DD
+        function formatDate(dateString) {
+            // 处理 Sat, 01 Feb 1992 00:00:00 GMT 格式
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                // 如果无法解析，返回原字符串
+                return dateString;
+            }
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
         // 根据数据猜测列类型（优化显示）

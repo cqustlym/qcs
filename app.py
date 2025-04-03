@@ -128,10 +128,10 @@ def success():
     elif request.method == 'GET':
         return render_template('success.html',results=[],error=None)
 
-@app.route('/lookfor', methods=['GET'])
-def lookfor_page():
+@app.route('/lookfor_month_data', methods=['GET'])
+def lookfor_month_data_page():
     """返回包含Handsontable的前端页面"""
-    return render_template('lookfor.html')
+    return render_template('lookfor_month_data.html')
 
 @app.route('/api/search', methods=['POST'])
 def search_well():
